@@ -454,6 +454,57 @@ export function ConsolePage() {
         return json;
       }
     );
+    client.addTool(
+      {
+        name: 'get_openwebinars_courses',
+        description: 'Obtiene información sobre cursos de OpenWebinars basado en la pregunta del usuario.',
+        parameters: {
+          type: 'object',
+          properties: {
+            question: {
+              type: 'string',
+              description: 'La pregunta del usuario sobre los cursos de OpenWebinars',
+            },
+          },
+          required: ['question'],
+        },
+      },
+      async ({ question }: { question: string }) => {
+        console.log('Iniciando get_openwebinars_courses con pregunta:', question);
+        console.log('URL de la API:', process.env.REACT_APP_OPENWEBINARS_API_URL);
+        console.log('API Key (primeros 5 caracteres):', process.env.REACT_APP_OPENWEBINARS_API_KEY?.substring(0, 5));
+
+        try {
+          const response = await fetch(
+            process.env.REACT_APP_OPENWEBINARS_API_URL || '',
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.REACT_APP_OPENWEBINARS_API_KEY}`,
+              },
+              body: JSON.stringify({ question })
+            }
+          );
+
+          console.log('Respuesta recibida. Status:', response.status);
+
+          if (!response.ok) {
+            console.error('Error en la respuesta:', response.statusText);
+            const errorText = await response.text();
+            console.error('Cuerpo del error:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log('Resultado obtenido:', result);
+          return result;
+        } catch (error) {
+          console.error('Error en get_openwebinars_courses:', error);
+          throw error;
+        }
+      }
+    );
 
     // handle realtime events from client + server for event logging
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
