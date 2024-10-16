@@ -505,6 +505,50 @@ export function ConsolePage() {
         }
       }
     );
+    client.addTool(
+      {
+        name: 'schedule_meeting',
+        description: 'Detecta cuando un usuario quiere agendar una reunión, extrae la fecha y hora en formato DD/MM/YYYY HH:mm, el asunto y la duración en formato HH:mm, y lo envía al webhook proporcionado.',
+        parameters: {
+          type: 'object',
+          properties: {
+            date: {
+              type: 'string',
+              description: 'Fecha y hora de la reunión en formato DD/MM/YYYY HH:mm',
+            },
+            subject: {
+              type: 'string',
+              description: 'Asunto de la reunión',
+            },
+            duration: {
+              type: 'string',
+              description: 'Duración de la reunión en formato HH:mm',
+            },
+          },
+          required: ['date', 'subject', 'duration'],
+        },
+      },
+      async ({ date, subject, duration }: { date: string; subject: string; duration: string }) => {
+        try {
+          const response = await fetch('https://hook.eu1.make.com/8y54kmxxue78kj31iyf48lnhc1n1r73a', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ date, subject, duration }),
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Error al enviar al webhook: ${response.statusText}`);
+          }
+          
+          return { ok: true };
+        } catch (error) {
+          console.error('Error en schedule_meeting:', error);
+          throw error;
+        }
+      }
+    );
 
     // handle realtime events from client + server for event logging
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
